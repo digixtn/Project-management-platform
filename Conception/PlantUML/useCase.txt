@@ -1,0 +1,383 @@
+@startuml
+skinparam classPadding 10
+skinparam classMargin 30
+skinparam nodesep 400  ' Try increasing this one more
+skinparam ranksep 30
+skinparam GroupInheritance 1
+skinparam linetype ortho
+
+' --- Abstract Base Class ---
+abstract class User {
+    - userId : int (PK)
+    - name : string
+    - email : string
+    - contactInfo : string
+    --
+    + accessKanbanBoard()
+    + accessTimelines()
+    + getNotifications()
+    + viewMeetings()
+    + joinMeeting(meeting : Meeting)
+    -- User-Initiated UI Access & General Actions --
+}
+
+' --- Concrete Role Classes inheriting from User ---
+
+class TeamMember extends User {
+    + requestStartWorkOnTask(task : Task)
+    + requestCompleteWorkOnTask(task : Task)
+    + requestCommentOnTask(task : Task, commentText : string)
+    + requestLogWorkingTime(task : Task, time : time)
+    -- Inherits attributes and methods from User --
+    -- User-Initiated Task Actions (Triggers Service Calls) --
+}
+
+class TeamLeader extends TeamMember {
+    + requestManageTeamMembers()
+    + requestCustomizeWorkflowsWithStages()
+    + requestConsultAIInsights()
+    + requestPreventOverloading()
+    + requestGetMemberSuggestion()
+    + requestTrackTimeForTeam()
+    + requestGetEffortEstimationForTask()
+    + requestPrioritizeTask(task : Task, priority : string)
+    + requestAssignTask(task : Task, user : User)
+    + requestCreateTask(project : Project, taskDetails : TaskDetails)
+    + requestConsultComplexityInsightsForTask(task : Task)
+    + requestBreakdownComplexTask(task : Task)
+    + requestGetProfileMatchingRecommendationsForTask(task : Task)
+    + requestInputAnalysisForProject()
+    -- Inherits attributes and methods from TeamMember and User --
+    -- User-Initiated Management Actions (Triggers Service Calls) --
+}
+
+class Admin extends TeamLeader {
+    + requestCreateWorkspace(workspaceDetails : WorkspaceDetails)
+    + requestDeleteWorkspace(workspace : Workspace)
+    + requestModifyWorkspace(workspace : Workspace, workspaceDetails : WorkspaceDetails)
+    + requestAssignTeamLeadersToProject(project : Project, teamLeader : TeamLeader)
+    + requestViewUpcomingProjectDeadlines()
+    + requestCreateProject(workspace : Workspace, projectDetails : ProjectDetails)
+    + requestOverseeAllActivityInWorkspace(workspace : Workspace)
+    + requestMonitorProject(project : Project)
+    + requestGiveFeedbackOnTask(task : Task, feedbackText : string)
+    + requestViewWorkspaceKPIs(workspace : Workspace)
+    + requestProcessServicePayment()
+    + requestManageSubscription()
+    + requestViewPaymentHistory()
+    -- Inherits attributes and methods from TeamLeader, TeamMember, and User --
+    -- User-Initiated Admin Actions (Triggers Service Calls) --
+}
+
+class SuperAdmin extends Admin {
+    -- No specific methods listed in use case, inherits all from Admin and below --
+    -- Could add methods for system-wide configuration, user role management, etc. in future iterations --
+}
+
+
+class Speciality {
+    - specialityId : int (PK)
+    - name : string
+    - description : string
+    --
+}
+class Workspace {
+    - workspaceId : int (PK)
+    - name : string
+    - description : string
+    - createdDate : date
+    --
+    -- Workspace Entity Data, Operations Managed by WorkspaceManagementService --
+}
+
+class Workflow {
+    - workflowId : int (PK)
+    - name : string
+    - description : string
+    --
+    -- Workflow Entity Data, Operations Managed by WorkflowManagementService --
+}
+
+class WorkflowStage {
+    - workflowStageId : int (PK)
+    - name : string
+    - stageOrder : int
+    --
+    -- WorkflowStage Entity Data, Operations Managed by WorkflowManagementService --
+}
+class Task {
+    - taskId : int (PK)
+    - name : string
+    - description : string
+    - status : string
+    - dueDate : date
+    - priority : string
+    - effortEstimate : time
+    - timeTracked : time
+    - currentStageId : int (FK)  -- Added FK for current stage
+    --
+    --  Task Entity Data, Operations Managed by TaskManagementService --
+}
+
+class Project {
+    - projectId : int (PK)
+    - name : string
+    - description : string
+    - startDate : date
+    - endDate : date
+    --
+    -- Project Entity Data, Operations Managed by ProjectManagementService --
+}
+
+
+
+class Comment {
+    - commentId : int (PK)
+    - userId : int (FK)
+    - taskId : int (FK)
+    - commentText : string
+    - timestamp : datetime
+    --
+    -- Comment Entity Data, Operations Managed by TaskManagementService --
+}
+
+class File {
+    - fileId : int (PK)
+    - fileName : string
+    - fileType : string
+    - fileSize : int
+    - uploadDate : datetime
+    - uploadedByUserId : int (FK)
+    --
+    -- File Entity Data, Operations Managed by CommunicationService (or TaskManagementService) --
+}
+
+class Notification {
+    - notificationId : int (PK)
+    - userId : int (FK)
+    - notificationType : string
+    - notificationMessage : string
+    - timestamp : datetime
+    - isRead : boolean
+    --
+    -- Notification Entity Data, Operations Managed by NotificationService --
+}
+
+class Meeting {
+    - meetingId : int (PK)
+    - organizerId : int (FK)
+    - title : string
+    - startTime : datetime
+    - endTime : datetime
+    --
+    -- Meeting Entity Data, Operations Managed by MeetingManagementService --
+}
+
+class Message {
+    - messageId : int (PK)
+    - senderId : int (FK)
+    - receiverId : int (FK)
+    - messageText : string
+    - timestamp : datetime
+    --
+    -- Message Entity Data, Operations Managed by CommunicationService --
+}
+
+' --- Service / Manager Classes ---
+
+class WorkspaceManagementService {
+    + createWorkspace(workspaceDetails : WorkspaceDetails, requestingUser : User) : Workspace
+    + deleteWorkspace(workspace : Workspace, requestingUser : User)
+    + modifyWorkspace(workspace : Workspace, workspaceDetails : WorkspaceDetails, requestingUser : User)
+    + assignTeamLeadersToProject(project : Project, teamLeader : TeamLeader, requestingUser : User)
+    -- RBAC Checks within methods --
+}
+
+class ProjectManagementService {
+    + createProject(workspace : Workspace, projectDetails : ProjectDetails, requestingUser : User) : Project
+    + overseeAllActivityInWorkspace(workspace : Workspace, requestingUser : User)
+    + monitorProject(project : Project, requestingUser : User)
+    + viewUpcomingProjectDeadlines(workspace : Workspace, requestingUser : User)
+    + viewWorkspaceKPIs(workspace : Workspace, requestingUser : User)
+    + addTask(project : Project, taskDetails : TaskDetails, requestingUser : User) : Task
+    + removeTask(project : Project, task : Task, requestingUser : User)
+    + addMember(project : Project, user : User, requestingUser : User)
+    + removeMember(project : Project, user : User, requestingUser : User)
+    + setWorkflow(project : Project, workflow : Workflow, requestingUser : User)
+    -- RBAC Checks within methods --
+}
+
+class TaskManagementService {
+    + createTask(project : Project, taskDetails : TaskDetails, requestingUser : User) : Task
+    + updateTaskStatus(task : Task, status : string, requestingUser : User)
+    + assignTask(task : Task, user : User, requestingUser : User)
+    + setSpecialityRequirement(task : Task, speciality : Speciality, requestingUser : User)
+    + getEffortEstimationForTask(task : Task, requestingUser : User)
+    + prioritizeTask(task : Task, priority : string, requestingUser : User)
+    + trackTask(task : Task, requestingUser : User)
+    + consultComplexityInsightsForTask(task : Task, requestingUser : User)
+    + breakdownComplexTask(task : Task, requestingUser : User)
+    + getProfileMatchingRecommendationsForTask(task : Task, requestingUser : User)
+    + giveFeedbackOnTask(task : Task, feedbackText : string, requestingUser : User)
+    + startExecution(task : Task, requestingUser : User)
+    + completeExecution(task : Task, requestingUser : User)
+    + addCommentToTask(task : Task, commentText : string, requestingUser : User) : Comment
+    + attachFileToTask(task : Task, file : File, requestingUser : User)
+    + logWorkingTimeForTask(task : Task, time : time, requestingUser : User)
+    -- RBAC Checks within methods --
+}
+
+class WorkflowManagementService {
+    + createWorkflow(workspace : Workspace, workflowDetails : WorkflowDetails, requestingUser : User) : Workflow
+    + deleteWorkflow(workspace : Workspace, workflow : Workflow, requestingUser : User)
+    + modifyWorkflow(workspace : Workspace, workflow : Workflow, workflowDetails : WorkflowDetails, requestingUser : User)
+    + customizeWorkflowsWithStages(workflow : Workflow, stageDetails : StageDetails, requestingUser : User)
+    + addStageToWorkflow(workflow : Workflow, stageDetails : WorkflowStageDetails, requestingUser : User) : WorkflowStage
+    + removeStageFromWorkflow(workflow : Workflow, stage : WorkflowStage, requestingUser : User)
+    + updateWorkflowStageOrder(workflow : Workflow, requestingUser : User)
+    -- RBAC Checks within methods --
+}
+
+class MeetingManagementService {
+    + scheduleMeeting(meetingDetails : MeetingDetails, organizer : User) : Meeting
+    + inviteParticipantsToMeeting(meeting : Meeting, users : List<User>, requestingUser : User)
+    + startMeeting(meeting : Meeting, requestingUser : User)
+    + endMeeting(meeting : Meeting, requestingUser : User)
+    + cancelMeeting(meeting : Meeting, requestingUser : User)
+    + viewMeetingsForUser(user : User) : List<Meeting>
+    + holdMeetings(organizer: User, meetingDetails: MeetingDetails, participants: List<User>) : Meeting  -- Combined Schedule and Invite
+    -- RBAC Checks within methods --
+}
+
+class CommunicationService {
+    + sendMessage(sender : User, receiver : User, messageText : string, requestingUser : User) : Message
+    + shareFile(file : File, task : Task, requestingUser : User)
+    + getAISuggestedDocumentsForTask(task : Task, requestingUser : User) : List<File> -- Example of AI service method
+    -- RBAC Checks within methods --
+}
+
+class PaymentService {
+    + processServicePayment(paymentDetails: PaymentDetails, requestingUser: User)
+    + manageSubscription(subscriptionDetails: SubscriptionDetails, requestingUser: User)
+    + viewPaymentHistory(requestingUser: User)
+    -- RBAC Checks within methods --
+}
+
+class NotificationService {
+    + getNotificationsForUser(user : User) : List<Notification>
+    -- RBAC Checks might be less relevant for simple get operations, but still consider for sensitive notifications --
+}
+
+
+' --- Association Classes ---
+
+class UserSpeciality {
+    -- composite key --
+    - userId : int (FK)
+    - specialityId : int (FK)
+    --
+}
+
+class ProjectTask {
+    -- composite key --
+    - projectId : int (FK)
+    - taskId : int (FK)
+    --
+}
+
+class WorkspaceProject {
+    -- composite key --
+    - workspaceId : int (FK)
+    - projectId : int (FK)
+    --
+}
+
+class WorkspaceUser {
+    -- composite key --
+    - workspaceId : int (FK)
+    - userId : int (FK)
+    - joinedDate : date
+    --
+}
+
+class WorkflowWorkflowStage {
+    -- composite key --
+    - workflowId : int (FK)
+    - workflowStageId : int (FK)
+    --
+}
+
+class MeetingParticipant {
+    -- composite key --
+    - meetingId : int (FK)
+    - userId : int (FK)
+    --
+}
+
+
+' --- Relationships ---
+
+' --- Project Relationships ---
+Workspace "1" -- "*" Project
+
+' --- Workspace Relationships ---
+Workspace "1" -- "*" User
+Workspace "0..1" -- "1..*" Workflow
+
+' --- User Relationships ---
+User "1" -up- "1" Speciality
+User "1" -up- "0..*" Task
+User "1" -down- "0..*" Notification
+User "1" -down- "0..*" Comment
+User "1" -left- "0..*" File
+User "1" -up- "0..*" Message
+
+' --- Speciality Relationships ---
+' (None directly with Speciality class other than User-Speciality)
+
+' --- Task Relationships ---
+Project "1" -- "1..*" Task
+Task "1" -- "0..1" Speciality
+Task -- "0..1" WorkflowStage /' i understand 50% of the logic behind this lol '/
+Workflow "1" -- "1..*" Task
+Task "1" -- "0..*" Comment
+Task "1" -- "0..*" File
+
+
+
+' --- Workflow Relationships ---
+Workflow "1" -- "*" WorkflowStage
+' Workflow -- Task  ' <<-- Already listed above
+
+' --- Meeting Relationships ---
+Meeting "1" -down- "1..*" User
+' User -- "*" Meeting   ' <<-- Already listed above
+
+' --- Message Relationships ---
+' (None directly with Message class other than User-Message)
+
+' --- Notification Relationships ---
+' (None directly with Notification class other than User-Notification)
+
+' --- Association Class Links (KEEP THESE - No Labels on these lines) ---
+Workspace o-- WorkspaceUser
+User o-- WorkspaceUser
+
+User o-up- UserSpeciality
+Speciality o-- UserSpeciality
+
+Project o-- ProjectTask
+Task o-- ProjectTask
+
+Workspace o-- WorkspaceProject
+Project o-- WorkspaceProject
+
+Workflow o-- WorkflowWorkflowStage
+WorkflowStage o-- WorkflowWorkflowStage
+
+Meeting o-- MeetingParticipant
+User o-- MeetingParticipant
+
+
+
+@enduml
