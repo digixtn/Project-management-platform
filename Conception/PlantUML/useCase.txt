@@ -321,7 +321,7 @@ class MeetingParticipant {
 Workspace "1" -- "*" Project
 
 ' --- Workspace Relationships ---
-Workspace "1" -- "*" User
+Workspace "1" -- "1" User
 Workspace "0..1" -- "1..*" Workflow
 
 ' --- User Relationships ---
@@ -350,7 +350,7 @@ Workflow "1" -- "*" WorkflowStage
 ' Workflow -- Task  ' <<-- Already listed above
 
 ' --- Meeting Relationships ---
-Meeting "1" -down- "1..*" User
+Meeting "0..1" -down- "1..*" User
 ' User -- "*" Meeting   ' <<-- Already listed above
 
 ' --- Message Relationships ---
