@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: projectManagement
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/digix
+    username: main
+    password: password
