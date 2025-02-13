@@ -90,7 +90,7 @@ const MasterLayout = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     // Redirect to login page
-    router.push('/sign-in');
+    window.location.replace('/sign-in');
   };
 
   let sidebarControl = () => {
