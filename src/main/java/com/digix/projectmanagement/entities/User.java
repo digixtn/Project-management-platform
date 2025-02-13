@@ -65,4 +65,8 @@ public class User implements UserDetails {
         return UserDetails.super.isEnabled();
     }
 
+    @Override
+    public String getUsername() {
+        return this.email; // Return the email as the "username" for Spring Security
+    }
 }

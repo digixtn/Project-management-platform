@@ -39,19 +39,29 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // Authenticate the user with the provided email and password
+        System.out.println("test auth");
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
+                        request.getEmail(),
                         request.getPassword()
                 )
         );
-        var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException(request.getUsername()));
-        System.out.println(user);
+        System.out.println("test findByEmail");
+
+        // Retrieve the user by email
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
+
+        // Generate JWT token for the authenticated user
         var jwtToken = jwtService.generateToken(user);
+
+        // Return the authentication response with the token and user role
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .role(user.getRole().name())
                 .build();
     }
+
 }
