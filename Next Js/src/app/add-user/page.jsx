@@ -14,7 +14,7 @@ const Page = () => {
       {/* MasterLayout */}
       <MasterLayout>
         {/* Breadcrumb */}
-        <Breadcrumb title='Add Users' />
+        <Breadcrumb title='Add User' />
 
         {/* AddUserLayer */}
         <AddUserLayer />
