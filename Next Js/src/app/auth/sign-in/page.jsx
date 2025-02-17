@@ -7,20 +7,12 @@ export const metadata = {
 };
 
 export default async function Page() {
-  // Simulate data fetching on the server
-  const data = await fetchSomeData();
-
   console.log('bruh');
 
   return (
     <>
       <SignInLayer />
-      <div>{data}</div>
     </>
   );
 }
 
-async function fetchSomeData() {
-  // Simulate fetching data from an API or database
-  return "Fetched data from server";
-}

@@ -25,8 +25,9 @@ const SignInLayer = () => {
         redirect: false,
         email,
         password,
-      });
-
+    });
+    
+      console.log(result+"\n\n\n\n");
       if (result?.error) {
         console.error('Login failed:', result.error);
       } else {
@@ -38,6 +39,7 @@ const SignInLayer = () => {
       console.error('Login failed:', error);
     }
   };
+
 
   return (
     <section className='auth bg-base d-flex flex-wrap'>

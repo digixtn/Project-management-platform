@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { usePathname, useRouter } from "next/navigation";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 const MasterLayout = ({ children }) => {
   let pathname = usePathname();
@@ -84,14 +85,14 @@ const MasterLayout = ({ children }) => {
 
   const router = useRouter();
 
-  const handleLogout = (e) => {
-    e.preventDefault();
-    // Clear token and role from local storage
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    // Redirect to login page
-    
-    window.location.replace('/auth/sign-in');
+  const handleLogout = async () => {
+    try {
+      await signOut({ callbackUrl: '/' }); // Redirect to home page
+      router.push('/auth/sign-in')
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Logout failed. Please try again.");
+    }
   };
 
   let sidebarControl = () => {
