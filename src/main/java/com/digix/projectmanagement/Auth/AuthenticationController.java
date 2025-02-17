@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -21,10 +24,21 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.register(request));
     }
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(
+    public ResponseEntity<Map<String, Object> > authenticate(
             @RequestBody AuthenticationRequest request
     ){
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        AuthenticationResponse authResponse =authenticationService.authenticate(request);
+        Map<String, Object> response = new HashMap<>();
+
+        Map<String, Object> userDetails = new HashMap<>();
+        userDetails.put("id", authResponse.getId());
+        userDetails.put("name", authResponse.getUsername());
+        userDetails.put("email", authResponse.getEmail());
+// ...add other user details
+
+        response.put("user", userDetails);
+        response.put("token", authResponse.getToken());
+        return ResponseEntity.ok(response);
 
     }
 }

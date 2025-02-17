@@ -60,7 +60,10 @@ public class AuthenticationService {
         // Return the authentication response with the token and user role
         return AuthenticationResponse.builder()
                 .token(jwtToken)
-                .role(user.getRole().name())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .id(user.getUserId())
+//                .role(user.getRole().name())
                 .build();
     }
 
