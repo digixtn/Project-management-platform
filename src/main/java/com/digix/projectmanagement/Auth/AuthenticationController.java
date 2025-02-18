@@ -34,7 +34,9 @@ public class AuthenticationController {
         userDetails.put("id", authResponse.getId());
         userDetails.put("name", authResponse.getUsername());
         userDetails.put("email", authResponse.getEmail());
-// ...add other user details
+        userDetails.put("role", authResponse.getRole());
+
+        // ...add other user details
 
         response.put("user", userDetails);
         response.put("token", authResponse.getToken());
