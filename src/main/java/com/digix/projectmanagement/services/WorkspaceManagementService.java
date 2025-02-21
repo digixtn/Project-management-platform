@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -73,22 +74,23 @@ public class WorkspaceManagementService {
     }
 
     @Transactional
-    public void deleteWorkspace(int workspaceId, User requestingUser) {
+    public void deleteWorkspace(int workspaceId, User currentUser) {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new EntityNotFoundException("Workspace not found"));
 
-        // Check if user has permission (creator or admin)
-        if (!(workspace.getCreatedBy().getUserId()==(requestingUser.getUserId())) &&
-                !UserType.ROLE_WORKSPACE_OWNER.equals(requestingUser.getRole())) {
-            throw new IllegalStateException("User does not have permission to delete this workspace");
+        if (currentUser.getRole() != UserType.ROLE_WORKSPACE_OWNER ||
+                workspace.getCreatedBy().getUserId() != currentUser.getUserId()) {
+            throw new IllegalStateException("Only the owner can delete the workspace.");
         }
 
-        // Delete all workspace user associations first
-        workspaceUserRepository.deleteByWorkspace_WorkspaceId(workspaceId);
+        // ✅ First, delete all associated users in a single query
+        workspaceUserRepository.deleteByWorkspaceId(workspaceId);
 
-        // Delete the workspace
-        workspaceRepository.delete(workspace);
+        // ✅ Then, delete the workspace itself
+        workspaceRepository.deleteById(workspaceId);
     }
+
+
 
     @Transactional
     public Workspace updateWorkspace(int workspaceId, Workspace workspaceDetails, User requestingUser) {

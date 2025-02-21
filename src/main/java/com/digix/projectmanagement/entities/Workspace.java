@@ -45,16 +45,4 @@ public class Workspace {
         }
     }
 
-    // Helper methods
-    public void addUser(User user) {
-        WorkspaceUser workspaceUser = new WorkspaceUser();
-        workspaceUser.setWorkspace(this);
-        workspaceUser.setUser(user);
-        workspaceUser.setJoinedDate(LocalDate.now());
-        workspaceUsers.add(workspaceUser);
-    }
-
-    public void removeUser(User user) {
-        workspaceUsers.removeIf(workspaceUser -> workspaceUser.getUser().equals(user));
-    }
 }
