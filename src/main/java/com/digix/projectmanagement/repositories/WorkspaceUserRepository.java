@@ -13,8 +13,6 @@ import java.util.Optional;
 @Repository
 public interface WorkspaceUserRepository extends JpaRepository<WorkspaceUser, WorkspaceUserId> {
   List<WorkspaceUser> findByWorkspaceWorkspaceId(int workspaceId);
-  List<WorkspaceUser> findByUserUserId(int userId);
-  void deleteByWorkspaceWorkspaceId(int workspaceId);
-  boolean existsByIdWorkspaceIdAndIdUserId(int workspaceId, int userId);
   Optional<WorkspaceUser> findByWorkspaceAndUser(Workspace workspace, User user);
+  void deleteByWorkspace_WorkspaceId(int workspaceId);
 }

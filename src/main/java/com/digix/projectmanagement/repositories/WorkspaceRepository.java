@@ -11,7 +11,6 @@ import java.util.Set;
 
 @Repository
 public interface WorkspaceRepository extends JpaRepository<Workspace, Integer> {
-  List<Workspace> findByCreatedByUserId(int userId);
 
   @Query("SELECT w FROM Workspace w JOIN w.workspaceUsers wu WHERE wu.user.userId = :userId")
   List<Workspace> findWorkspacesForUser(@Param("userId") int userId);

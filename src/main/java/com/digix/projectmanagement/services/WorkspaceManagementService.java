@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,23 +38,38 @@ public class WorkspaceManagementService {
     }
 
     @Transactional
-    public Workspace createWorkspace(Workspace workspaceDetails, User requestingUser) {
-        // Basic RBAC check - only ADMIN can create workspaces
-        if (requestingUser.getRole() != UserType.ROLE_WORKSPACE_OWNER) {
-            throw new IllegalStateException("User does not have permission to create workspaces");
+    public Workspace createWorkspace(Workspace workspace, User currentUser) {
+        // Check if user has permission (creator or admin)
+        if (currentUser.getRole() != UserType.ROLE_WORKSPACE_OWNER) {
+            throw new IllegalStateException("User does not have permission to delete this workspace");
         }
 
-        // Set created by user
-        workspaceDetails.setCreatedBy(requestingUser);
-        workspaceDetails.setCreatedDate(LocalDate.now());
+        // Set creation date if not already set
+        if (workspace.getCreatedDate() == null) {
+            workspace.setCreatedDate(LocalDate.now());
+        }
 
-        // Save the workspace
-        Workspace workspace = workspaceRepository.save(workspaceDetails);
+        // Set the creator of the workspace
+        workspace.setCreatedBy(currentUser);
 
-        // Add the creator to the workspace
-        addUserToWorkspace(workspace, requestingUser);
+        // Save the workspace first to get the generated ID
+        Workspace savedWorkspace = workspaceRepository.save(workspace);
 
-        return workspace;
+        // Create the workspace-user association
+        WorkspaceUser workspaceUser = new WorkspaceUser();
+        WorkspaceUser.WorkspaceUserId compositeId = new WorkspaceUser.WorkspaceUserId(
+                savedWorkspace.getWorkspaceId(),
+                currentUser.getUserId()
+        );
+
+        workspaceUser.setId(compositeId);
+        workspaceUser.setWorkspace(savedWorkspace);
+        workspaceUser.setUser(currentUser);
+        workspaceUser.setJoinedDate(LocalDate.now());
+
+        workspaceUserRepository.save(workspaceUser);
+
+        return savedWorkspace;
     }
 
     @Transactional
@@ -62,13 +78,13 @@ public class WorkspaceManagementService {
                 .orElseThrow(() -> new EntityNotFoundException("Workspace not found"));
 
         // Check if user has permission (creator or admin)
-        if (workspace.getCreatedBy().getUserId() != requestingUser.getUserId() &&
-                requestingUser.getRole() != UserType.ROLE_WORKSPACE_OWNER) {
+        if (!(workspace.getCreatedBy().getUserId()==(requestingUser.getUserId())) &&
+                !UserType.ROLE_WORKSPACE_OWNER.equals(requestingUser.getRole())) {
             throw new IllegalStateException("User does not have permission to delete this workspace");
         }
 
         // Delete all workspace user associations first
-        workspaceUserRepository.deleteByWorkspaceWorkspaceId(workspaceId);
+        workspaceUserRepository.deleteByWorkspace_WorkspaceId(workspaceId);
 
         // Delete the workspace
         workspaceRepository.delete(workspace);
