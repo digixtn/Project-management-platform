@@ -38,6 +38,6 @@ public class Task {
     private Duration timeTracked;
 
     @ManyToOne
-    @JoinColumn(name = "current_stage_id")
-    private WorkflowStage currentStageId;
+    @JoinColumn(name = "current_project_id")
+    private Project currentProjectId;
 }
